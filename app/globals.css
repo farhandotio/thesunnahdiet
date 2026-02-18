@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fdfcf9;
+  --foreground: #1f2937;
+
+  --primary: #2f5d50;
+  --secondary: #c9a24d;
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+.input {
+  @apply w-full px-4 py-2 rounded-lg border border-gray-300
+         focus:outline-none focus:ring-2 focus:ring-primary
+         bg-white;
+  color: var(--foreground);
+}
+
+.container {
+  @apply max-w-7xl mx-auto px-4;
+}

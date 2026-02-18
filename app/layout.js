@@ -1,0 +1,43 @@
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+
+const geistSans = Geist({
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+});
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+});
+
+export const metadata = {
+  title: 'দ্য সুন্নাহ ডায়েট | Sunnah Based Healthy Lifestyle',
+  description:
+    'রাসূল ﷺ এর সুন্নাহ অনুযায়ী খেজুর ও প্রাকৃতিক হালাল খাদ্যপণ্য। সুস্থ দেহ, শান্ত মন—এই আমাদের লক্ষ্য।',
+  keywords: [
+    'Sunnah Diet',
+    'Islamic Dates',
+    'Khejur Bangladesh',
+    'Halal Food',
+    'Ajwa Dates',
+    'Cash on Delivery Bangladesh',
+  ],
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="bn">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+      >
+        <Navbar />
+        <main className="min-h-screen pt-18">{children}</main>
+
+        <Footer />
+      </body>
+    </html>
+  );
+}
