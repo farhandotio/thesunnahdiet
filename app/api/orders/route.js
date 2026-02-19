@@ -1,8 +1,9 @@
 import connectDB from '@/lib/mongodb';
-import Product from '@/models/Product';
 import Order from '@/models/Order';
+import Product from '@/models/Product';
 import { NextResponse } from 'next/server';
 
+// ১. অর্ডার প্লেস করা (Customer Checkout)
 export async function POST(request) {
   await connectDB();
   try {
@@ -11,27 +12,21 @@ export async function POST(request) {
 
     let calculatedSubtotal = 0;
     const finalItems = [];
-    
+
     for (const item of items) {
       const dbProduct = await Product.findById(item.id);
-      if (!dbProduct) {
-        return NextResponse.json({ message: `${item.name} পণ্যটি পাওয়া যায়নি!` }, { status: 404 });
-      }
+      if (!dbProduct) return NextResponse.json({ message: 'পণ্য পাওয়া যায়নি' }, { status: 404 });
 
-      const itemPrice = dbProduct.price; 
-      calculatedSubtotal += itemPrice * item.quantity;
-
+      calculatedSubtotal += dbProduct.price * item.quantity;
       finalItems.push({
         productId: dbProduct._id,
         name: dbProduct.name,
         quantity: item.quantity,
-        priceAtOrder: itemPrice,
+        priceAtOrder: dbProduct.price,
       });
     }
 
     const deliveryCharge = customerInfo.district === 'ঢাকা' ? 60 : 120;
-    const totalAmount = calculatedSubtotal + deliveryCharge;
-
     const newOrder = await Order.create({
       name: customerInfo.name,
       phone: customerInfo.phone,
@@ -40,19 +35,22 @@ export async function POST(request) {
       items: finalItems,
       subtotal: calculatedSubtotal,
       deliveryCharge,
-      totalAmount,
+      totalAmount: calculatedSubtotal + deliveryCharge,
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        orderId: newOrder._id,
-        total: totalAmount,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, orderId: newOrder._id }, { status: 201 });
   } catch (error) {
-    console.error('Server Error:', error);
-    return NextResponse.json({ message: 'সার্ভারে সমস্যা হয়েছে' }, { status: 500 });
+    return NextResponse.json({ message: 'সার্ভার এরর' }, { status: 500 });
+  }
+}
+
+// ২. সব অর্ডার দেখা (Admin View)
+export async function GET() {
+  await connectDB();
+  try {
+    const orders = await Order.find({}).sort({ createdAt: -1 });
+    return NextResponse.json(orders);
+  } catch (error) {
+    return NextResponse.json({ message: 'Error fetching orders' }, { status: 500 });
   }
 }

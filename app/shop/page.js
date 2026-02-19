@@ -55,7 +55,7 @@ export default function ShopPage() {
             <h1 className="text-3xl md:text-5xl font-black text-[#1f2937] mb-2 italic uppercase tracking-tighter">
               আমাদের <span className="text-[#2f5d50]">পণ্যসমূহ</span>
             </h1>
-            <p className="text-sm md:text-base font-bold text-gray-400 uppercase tracking-[0.2em] mb-8">
+            <p className="text-sm md:text-base font-bold text-gray-500 uppercase tracking-wide mb-8">
               সুন্নাহ ভিত্তিক বিশুদ্ধ খাদ্যের সমাহার
             </p>
 
@@ -68,7 +68,7 @@ export default function ShopPage() {
                   type="text"
                   aria-label="পণ্য খোঁজার ইনপুট"
                   placeholder="আপনার পছন্দের পণ্যটি খুঁজুন..."
-                  className="w-full pl-14 pr-8 py-4 bg-[#fcfbf9] border-2 border-gray-100 rounded-full focus:border-[#2f5d50] focus:bg-white transition-all outline-none text-lg font-bold shadow-sm"
+                  className="w-full pl-14 pr-8 py-4 bg-[#fcfbf9] border-2 border-gray-100 rounded-full focus:border-[#2f5d50] focus:bg-white transition-all outline-none text-lg font-bold shadow-sm text-gray-500"
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -87,10 +87,10 @@ export default function ShopPage() {
                       setActiveCategory(cat);
                       setCurrentPage(1);
                     }}
-                    className={`px-6 py-2 text-[11px] md:text-xs font-black uppercase tracking-widest transition-all border-2 rounded-full ${
+                    className={`px-6 py-2 text-[11px] md:text-xs font-black uppercase tracking-wide transition-all border-2 rounded-full ${
                       activeCategory === cat
                         ? 'bg-[#2f5d50] text-white border-[#2f5d50] shadow-md'
-                        : 'bg-white text-gray-400 border-gray-100 hover:border-[#2f5d50] hover:text-[#2f5d50]'
+                        : 'bg-white text-gray-500 border-gray-100 hover:border-[#2f5d50] hover:text-[#2f5d50]'
                     }`}
                   >
                     {cat}
@@ -116,7 +116,7 @@ export default function ShopPage() {
           </div>
         ) : (
           <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100">
-            <p className="text-xl font-black text-gray-300 uppercase italic">পণ্য পাওয়া যায়নি</p>
+            <p className="text-xl font-black text-gray-500 uppercase italic">পণ্য পাওয়া যায়নি</p>
           </div>
         )}
 
@@ -141,7 +141,7 @@ export default function ShopPage() {
                   className={`w-12 h-12 rounded-full font-black text-sm border-2 transition-all ${
                     currentPage === i + 1
                       ? 'bg-[#2f5d50] text-white border-[#2f5d50] shadow-md scale-110'
-                      : 'bg-white border-gray-100 text-gray-400 hover:border-[#2f5d50] hover:text-[#2f5d50]'
+                      : 'bg-white border-gray-100 text-gray-500 hover:border-[#2f5d50] hover:text-[#2f5d50]'
                   }`}
                 >
                   {i + 1}

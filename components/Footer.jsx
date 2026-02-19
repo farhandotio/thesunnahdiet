@@ -27,6 +27,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
+                  aria-label="go to home"
                   href="/"
                   className="text-gray-200 hover:text-secondary transition-colors text-sm"
                 >
@@ -35,6 +36,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  aria-label="go to shop"
                   href="/shop"
                   className="text-gray-200 hover:text-secondary transition-colors text-sm"
                 >
@@ -43,6 +45,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  aria-label="go to about"
                   href="/about"
                   className="text-gray-200 hover:text-secondary transition-colors text-sm"
                 >
@@ -51,6 +54,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  aria-label="go to contact"
                   href="/contact"
                   className="text-gray-200 hover:text-secondary transition-colors text-sm"
                 >
@@ -75,6 +79,7 @@ export default function Footer() {
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-secondary" />
                 <a
+                  target="blank"
                   href="mailto:thesunnahdiet2@gmail.com"
                   className="hover:text-secondary transition-colors"
                 >
@@ -87,7 +92,12 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3 pt-2">
                 <Facebook className="w-4 h-4 text-secondary" />
-                <a href="#" className="hover:text-secondary transition-colors">
+                <a
+                  target="blank"
+                  aria-label="visit facebook page"
+                  href="https://www.facebook.com/nextron20"
+                  className="hover:text-secondary transition-colors"
+                >
                   Facebook Page
                 </a>
               </div>

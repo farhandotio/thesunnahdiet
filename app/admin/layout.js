@@ -97,7 +97,7 @@ export default function AdminLayout({ children }) {
 
       {/* Content Area */}
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="hidden md:flex items-center justify-between px-10 py-5 bg-white border-b border-slate-200 shadow-sm">
+        <header className="hidden md:flex items-center justify-between px-6 py-5 bg-white border-b border-slate-200 shadow-sm">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">
             System Operational
           </span>
@@ -106,7 +106,7 @@ export default function AdminLayout({ children }) {
             <span className="text-xs font-bold text-slate-700">Live Server</span>
           </div>
         </header>
-        <div className="p-6 md:p-10 max-w-7xl w-full mx-auto">{children}</div>
+        <div className="p-4 md:p-6 max-w-7xl w-full mx-auto">{children}</div>
       </main>
     </div>
   );

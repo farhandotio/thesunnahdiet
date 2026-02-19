@@ -69,14 +69,14 @@ export default function Trust() {
           <h2 className="text-4xl md:text-6xl font-black text-white mb-6 italic uppercase tracking-tighter">
             সুন্নাহ মেনে জীবন শুরু করুন
           </h2>
-          <p className="text-white/80 mb-12 max-w-2xl mx-auto text-lg md:text-xl font-bold uppercase tracking-widest">
+          <p className="text-white/80 mb-12 max-w-2xl mx-auto text-lg md:text-xl font-bold uppercase tracking-wide">
             সুস্থ শরীর ও প্রশান্ত মনের জন্য রাসূল ﷺ এর দেখানো পদ্ধতিই সর্বোত্তম।
           </p>
 
           <Link
             aria-label="সকল পণ্য দেখতে শপ পেজে যান"
             href="/shop"
-            className="inline-flex items-center gap-4 bg-white text-[#2f5d50] rounded font-black py-5 px-12 text-xl uppercase tracking-widest hover:bg-[#efedeb] transition-all group shadow-2xl"
+            className="inline-flex items-center gap-4 bg-white text-[#2f5d50] rounded font-black py-5 px-12 text-xl uppercase tracking-wide hover:bg-[#efedeb] transition-all group shadow-2xl"
           >
             <span>পণ্য দেখুন</span>
             <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-2" />

@@ -150,7 +150,7 @@ export default function CheckoutPage() {
                 {/* নাম এবং ফোন নম্বর */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="group space-y-2">
-                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-widest ml-1">
+                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-wide ml-1">
                       আপনার নাম *
                     </label>
                     <input
@@ -163,7 +163,7 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div className="group space-y-2">
-                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-widest ml-1">
+                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-wide ml-1">
                       মোবাইল নম্বর *
                     </label>
                     <input
@@ -180,7 +180,7 @@ export default function CheckoutPage() {
                 {/* জেলা এবং ঠিকানা */}
                 <div className="flex flex-col md:flex-row gap-6">
                   <div className="space-y-2 md:w-1/3">
-                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-widest ml-1">
+                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-wide ml-1">
                       জেলা *
                     </label>
                     <div className="relative">
@@ -200,7 +200,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="space-y-2 flex-1">
-                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-widest ml-1">
+                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-wide ml-1">
                       পুরো ঠিকানা *
                     </label>
                     <textarea
@@ -262,7 +262,7 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-xl border border-gray-100 shadow-xl shadow-gray-200/50 sticky top-24 overflow-hidden">
               {/* হেডার */}
               <div className="p-5 border-b border-gray-50 bg-[#2f5d50]/20 flex items-center justify-between">
-                <h2 className="font-black text-sm text-[#1f2937] uppercase tracking-widest flex items-center gap-2">
+                <h2 className="font-black text-sm text-[#1f2937] uppercase tracking-wide flex items-center gap-2">
                   <ShoppingBag className="w-4 h-4 text-[#2f5d50]" />
                   অর্ডার সামারি
                 </h2>
@@ -309,11 +309,11 @@ export default function CheckoutPage() {
               {/* বিলিং ক্যালকুলেশন */}
               <div className="p-6 bg-[#fcfbf9] border-t border-gray-100">
                 <div className="space-y-3 mb-6">
-                  <div className="flex justify-between text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                  <div className="flex justify-between text-[11px] font-black text-gray-400 uppercase tracking-wide">
                     <span>সাবটোটাল</span>
                     <span className="text-gray-700">৳ {cartTotal.toLocaleString('bn-BD')}</span>
                   </div>
-                  <div className="flex justify-between text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                  <div className="flex justify-between text-[11px] font-black text-gray-400 uppercase tracking-wide">
                     <span>ডেলিভারি চার্জ</span>
                     <span className="text-gray-700">
                       ৳ {deliveryCharge.toLocaleString('bn-BD')}

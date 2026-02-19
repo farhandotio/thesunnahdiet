@@ -50,7 +50,7 @@ export default function Hero() {
             <Link
               aria-label="সকল পণ্য দেখতে শপে যান"
               href="/shop"
-              className="inline-flex items-center gap-3 bg-[#2f5d50] hover:bg-[#1e3d34] text-white font-black py-5 px-10 rounded-sm transition-all shadow-2xl shadow-[#2f5d50]/30 group transform active:scale-95 text-lg uppercase tracking-widest"
+              className="inline-flex items-center gap-3 bg-[#2f5d50] hover:bg-[#1e3d34] text-white font-black py-5 px-10 rounded-sm transition-all shadow-2xl shadow-[#2f5d50]/30 group transform active:scale-95 text-lg uppercase tracking-wide"
             >
               Shop Now
               <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-2" />
@@ -59,7 +59,7 @@ export default function Hero() {
             <Link
               aria-label="আমাদের সম্পর্কে জানুন"
               href="/about"
-              className="inline-flex items-center gap-3 bg-white border-2 border-gray-200 text-[#1f2937] font-black py-5 px-10 rounded-sm transition-all hover:bg-gray-50 text-lg uppercase tracking-widest"
+              className="inline-flex items-center gap-3 bg-white border-2 border-gray-200 text-[#1f2937] font-black py-5 px-10 rounded-sm transition-all hover:bg-gray-50 text-lg uppercase tracking-wide"
             >
               Our Story
             </Link>

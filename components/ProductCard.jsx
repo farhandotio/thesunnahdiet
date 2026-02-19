@@ -40,14 +40,14 @@ export default function ProductCard({ product }) {
           </h3>
         </Link>
 
-        <p className="text-sm text-gray-500 font-bold leading-relaxed line-clamp-2 mb-6 flex-1 uppercase tracking-tight">
+        <p className="text-sm text-gray-600 font-medium leading-relaxed line-clamp-2 mb-6 flex-1 uppercase tracking-tight">
           {product.description}
         </p>
 
         {/* প্রাইজ এবং বাটন সেকশন */}
-        <div className="flex items-center justify-between gap-2 pt-4 border-t border-gray-50">
+        <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-50">
           <div className="flex flex-col">
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">
+            <span className="text-sm font-black text-gray-500 uppercase tracking-wide leading-none mb-1">
               মূল্য
             </span>
             <span className="text-2xl font-black text-[#2f5d50] italic tracking-tighter">
@@ -64,7 +64,7 @@ export default function ProductCard({ product }) {
             className="flex items-center gap-2 bg-[#2f5d50] hover:bg-[#1e3d34] text-white rounded font-black px-5 py-3 transition-all active:scale-90 shadow-lg shadow-[#2f5d50]/20 group/btn"
           >
             <ShoppingCart className="w-5 h-5 transition-transform group-hover/btn:-rotate-12" />
-            <span className="text-sm uppercase tracking-widest">কার্ট</span>
+            <span className="text-sm uppercase tracking-wide">কার্ট</span>
           </button>
         </div>
       </div>
