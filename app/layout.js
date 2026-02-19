@@ -34,18 +34,13 @@ export default function RootLayout({ children }) {
     <html lang="bn">
       <body
         suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <CartProvider>
           <Navbar />
           <main className="min-h-screen">
             {children}
-            <Toaster
-              position="bottom-center"
-              toastOptions={{
-                duration: 3000,
-              }}
-            />
+            <Toaster position="bottom-center" reverseOrder={false} />
           </main>
           <Footer />
         </CartProvider>
