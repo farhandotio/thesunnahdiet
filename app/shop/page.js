@@ -1,121 +1,161 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ProductCard from '@/components/ProductCard';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { allProducts, categories } from '@/data/products'; // ডাটা ইম্পোর্ট
+import { Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 export default function ShopPage() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('সকল পণ্য');
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 8;
 
-  // ফিল্টারিং লজিক (Search + Category)
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch('/api/products');
+        const data = await res.json();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Fetch error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const dynamicCategories = useMemo(() => {
+    const cats = ['সকল পণ্য', ...new Set(products.map((p) => p.category))];
+    return cats;
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
-    return allProducts.filter((product) => {
+    return products.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = activeCategory === 'সকল পণ্য' || product.category === activeCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, activeCategory]);
+  }, [searchQuery, activeCategory, products]);
 
-  // পেজিনেশন লজিক
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
   const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
   return (
-    <div className="bg-[#faf9f6] min-h-screen pb-20">
-      {/* Header & Search */}
-      <div className="bg-white border-b border-gray-100 mb-10">
-        <div className="container py-12 text-center">
-          <h1 className="text-3xl md:text-5xl font-bold text-primary mb-3">আমাদের পণ্যসমূহ</h1>
-          <p className="text-foreground/60 text-base mb-10">
-            সুন্নাহ ভিত্তিক প্রিমিয়াম স্বাস্থ্যকর খাদ্য পণ্য
-          </p>
+    <div className="bg-[#faf9f6] min-h-screen pb-16">
+      {/* Header & Search Section (Compact & Rounded) */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="container py-10 md:py-14">
+          <div className="flex flex-col items-center max-w-4xl mx-auto text-center">
+            <h1 className="text-3xl md:text-5xl font-black text-[#1f2937] mb-2 italic uppercase tracking-tighter">
+              আমাদের <span className="text-[#2f5d50]">পণ্যসমূহ</span>
+            </h1>
+            <p className="text-sm md:text-base font-bold text-gray-400 uppercase tracking-[0.2em] mb-8">
+              সুন্নাহ ভিত্তিক বিশুদ্ধ খাদ্যের সমাহার
+            </p>
 
-          <div className="max-w-3xl mx-auto">
-            <div className="relative group mb-8">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-primary transition-colors" />
-              <input
-                type="text"
-                placeholder="আপনার পছন্দের পণ্যটি খুঁজুন..."
-                className="w-full pl-14 pr-6 py-4 bg-[#f8f8f8] border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all outline-none"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1); // সার্চ করলে ১ নম্বর পেজে নিয়ে যাবে
-                }}
-              />
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-3">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    setActiveCategory(cat);
-                    setCurrentPage(1); // ক্যাটাগরি চেঞ্জ করলে ১ নম্বর পেজে নিয়ে যাবে
+            <div className="w-full max-w-2xl space-y-6">
+              <div className="relative group">
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-[#2f5d50]">
+                  <Search className="w-5 h-5 stroke-[3px]" />
+                </div>
+                <input
+                  type="text"
+                  aria-label="পণ্য খোঁজার ইনপুট"
+                  placeholder="আপনার পছন্দের পণ্যটি খুঁজুন..."
+                  className="w-full pl-14 pr-8 py-4 bg-[#fcfbf9] border-2 border-gray-100 rounded-full focus:border-[#2f5d50] focus:bg-white transition-all outline-none text-lg font-bold shadow-sm"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
                   }}
-                  className={`px-6 py-2 text-sm font-bold transition-all border ${
-                    activeCategory === cat
-                      ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                      : 'bg-white text-foreground/60 border-gray-200 hover:border-primary hover:text-primary'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+                />
+              </div>
+
+              {/* Categories Navigation (Pill shape) */}
+              <div className="flex flex-wrap justify-center gap-2">
+                {dynamicCategories.map((cat) => (
+                  <button
+                    key={cat}
+                    aria-label={`${cat} ক্যাটাগরি ফিল্টার করুন`}
+                    onClick={() => {
+                      setActiveCategory(cat);
+                      setCurrentPage(1);
+                    }}
+                    className={`px-6 py-2 text-[11px] md:text-xs font-black uppercase tracking-widest transition-all border-2 rounded-full ${
+                      activeCategory === cat
+                        ? 'bg-[#2f5d50] text-white border-[#2f5d50] shadow-md'
+                        : 'bg-white text-gray-400 border-gray-100 hover:border-[#2f5d50] hover:text-[#2f5d50]'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="container">
-        {currentProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* Products Grid */}
+      <div className="container mt-12 px-4">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="animate-spin text-[#2f5d50] w-10 h-10 stroke-[3px]" />
+          </div>
+        ) : currentProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {currentProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 text-foreground/50">কোনো পণ্য পাওয়া যায়নি।</div>
+          <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100">
+            <p className="text-xl font-black text-gray-300 uppercase italic">পণ্য পাওয়া যায়নি</p>
+          </div>
         )}
 
-        {/* Pagination */}
+        {/* Pagination (Rounded Buttons) */}
         {totalPages > 1 && (
-          <div className="mt-20 flex justify-center items-center gap-3">
+          <div className="mt-16 flex justify-center items-center gap-3">
             <button
+              aria-label="আগের পেজ"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((prev) => prev - 1)}
-              className="p-3 border border-gray-200 bg-white hover:bg-primary hover:text-white disabled:opacity-30 transition-all"
+              className="p-4 rounded-full border-2 border-gray-100 bg-white text-[#2f5d50] hover:bg-[#2f5d50] hover:text-white disabled:opacity-20 transition-all shadow-sm"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5 stroke-[3px]" />
             </button>
 
-            {[...Array(totalPages)].map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentPage(i + 1)}
-                className={`w-12 h-12 font-bold border transition-all ${
-                  currentPage === i + 1
-                    ? 'bg-primary text-white border-primary'
-                    : 'bg-white border-gray-200 text-foreground/60'
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
+            <div className="flex gap-2">
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  aria-label={`পেজ নম্বর ${i + 1}`}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`w-12 h-12 rounded-full font-black text-sm border-2 transition-all ${
+                    currentPage === i + 1
+                      ? 'bg-[#2f5d50] text-white border-[#2f5d50] shadow-md scale-110'
+                      : 'bg-white border-gray-100 text-gray-400 hover:border-[#2f5d50] hover:text-[#2f5d50]'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
 
             <button
+              aria-label="পরের পেজ"
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((prev) => prev + 1)}
-              className="p-3 border border-gray-200 bg-white hover:bg-primary hover:text-white disabled:opacity-30 transition-all"
+              onClick={() => setCurrentPage((prev) => prev - 1)}
+              className="p-4 rounded-full border-2 border-gray-100 bg-white text-[#2f5d50] hover:bg-[#2f5d50] hover:text-white disabled:opacity-20 transition-all shadow-sm"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5 stroke-[3px]" />
             </button>
           </div>
         )}

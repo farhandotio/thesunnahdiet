@@ -1,0 +1,71 @@
+import { NextResponse } from 'next/server';
+import connectDB from '@/lib/mongodb';
+import Product from '@/models/Product';
+
+// ১. স্পেসিফিক প্রোডাক্টের ডাটা পাওয়ার জন্য (এটি ডিটেইলস পেজের জন্য জরুরি)
+export async function GET(request, { params }) {
+  try {
+    await connectDB();
+    const { id } = await params;
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return NextResponse.json({ error: 'পণ্যটি পাওয়া যায়নি' }, { status: 404 });
+    }
+
+    return NextResponse.json(product, { status: 200 });
+  } catch (error) {
+    console.error('GET Error:', error);
+    return NextResponse.json({ error: 'সার্ভারে সমস্যা হয়েছে' }, { status: 500 });
+  }
+}
+
+// ২. প্রোডাক্ট আপডেট করার জন্য (PUT) - এটি এডমিন প্যানেলের এডিট বাটনের জন্য
+export async function PUT(request, { params }) {
+  try {
+    await connectDB();
+    const { id } = await params;
+    const body = await request.json();
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      {
+        name: body.name,
+        price: body.price,
+        category: body.category,
+        image: body.image,
+        description: body.description,
+      },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      return NextResponse.json({ error: 'প্রোডাক্ট পাওয়া যায়নি' }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedProduct, { status: 200 });
+  } catch (error) {
+    console.error('Update Error:', error);
+    return NextResponse.json({ error: 'আপডেট করতে সমস্যা হয়েছে' }, { status: 500 });
+  }
+}
+
+// ৩. প্রোডাক্ট ডিলিট করার জন্য (DELETE)
+export async function DELETE(request, { params }) {
+  try {
+    await connectDB();
+    const { id } = await params;
+
+    const deletedProduct = await Product.findByIdAndDelete(id);
+
+    if (!deletedProduct) {
+      return NextResponse.json({ error: 'প্রোডাক্ট পাওয়া যায়নি' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'সফলভাবে ডিলিট হয়েছে' }, { status: 200 });
+  } catch (error) {
+    console.error('Delete Error:', error);
+    return NextResponse.json({ error: 'ডিলিট করতে সমস্যা হয়েছে' }, { status: 500 });
+  }
+}
