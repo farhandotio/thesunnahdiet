@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 async function isAdmin() {
-  const cookieStore = await cookies(); // await যোগ করা হয়েছে
+  const cookieStore = await cookies(); 
   const token = cookieStore.get('admin_token')?.value;
   return token === process.env.ADMIN_SECRET_KEY;
 }
@@ -28,7 +28,7 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const authorized = await isAdmin(); // await যোগ করা হয়েছে
+  const authorized = await isAdmin(); 
   if (!authorized) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   await connectDB();

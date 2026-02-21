@@ -20,7 +20,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <h3 className="font-bold text-lg text-[#1f2937]">ফোন</h3>
-                <p className="text-foreground/70">01833-956721</p>
+                <p className="text-foreground/70">01814-029666</p>
                 <p className="text-foreground/70">+880 1814-029666</p>
               </div>
             </div>
@@ -47,7 +47,7 @@ export default function ContactPage() {
 
             {/* Direct WhatsApp Action */}
             <a
-              href="https://wa.me/8801833956721"
+              href="https://wa.me/8801814029666"
               className="flex items-center justify-center gap-3 bg-[#2f5d50] hover:bg-[#254a40] text-white py-4 font-bold transition-all shadow-md group"
             >
               <MessageCircle className="w-6 h-6 transition-transform group-hover:scale-110" />

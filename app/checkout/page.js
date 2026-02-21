@@ -64,7 +64,7 @@ export default function CheckoutPage() {
         const message = `নতুন অর্ডার!%0Aঅর্ডার আইডি: ${result.orderId}%0Aনাম: ${formData.name}%0Aফোন: ${formData.phone}%0Aমোট বিল: ৳${result.total}`;
 
         setTimeout(() => {
-          window.open(`https://wa.me/8801833956721?text=${message}`, '_blank');
+          window.open(`https://wa.me/8801814029666?text=${message}`, '_blank');
         }, 1500);
 
         setIsOrderComplete(true);
