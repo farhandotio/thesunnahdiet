@@ -7,11 +7,10 @@ export async function POST(request) {
 
     if (key === secret) {
       const response = NextResponse.json({ success: true });
-      // সার্ভার সাইড থেকে কুকি সেট করা হচ্ছে
       response.cookies.set('admin_token', key, {
         path: '/',
-        maxAge: 60 * 60 * 24 * 7, // ৭ দিন
-        httpOnly: false, // যাতে মিডলওয়্যার এবং ক্লায়েন্ট সহজে পায়
+        maxAge: 60 * 60 * 24 * 7, 
+        httpOnly: false, 
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
       });

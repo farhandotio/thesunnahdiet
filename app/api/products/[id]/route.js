@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 
-// ১. স্পেসিফিক প্রোডাক্টের ডাটা পাওয়ার জন্য (এটি ডিটেইলস পেজের জন্য জরুরি)
 export async function GET(request, { params }) {
   try {
     await connectDB();
@@ -21,7 +20,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// ২. প্রোডাক্ট আপডেট করার জন্য (PUT) - এটি এডমিন প্যানেলের এডিট বাটনের জন্য
 export async function PUT(request, { params }) {
   try {
     await connectDB();
@@ -32,12 +30,12 @@ export async function PUT(request, { params }) {
       id,
       {
         name: body.name,
-        price: body.price,
         category: body.category,
         image: body.image,
         description: body.description,
+        variants: body.variants,
       },
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     if (!updatedProduct) {
@@ -51,7 +49,6 @@ export async function PUT(request, { params }) {
   }
 }
 
-// ৩. প্রোডাক্ট ডিলিট করার জন্য (DELETE)
 export async function DELETE(request, { params }) {
   try {
     await connectDB();
