@@ -1,7 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Plus, Minus, ArrowLeft, Truck, Zap, Loader2 } from 'lucide-react';
+import {
+  ShoppingCart,
+  Plus,
+  Minus,
+  ArrowLeft,
+  Truck,
+  Zap,
+  Loader2,
+  CheckCircle2,
+  ShieldCheck,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
@@ -14,8 +24,8 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState(null);
 
-  // ডাটাবেস থেকে তথ্য আনা
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -24,6 +34,10 @@ export default function ProductDetails() {
         if (res.ok) {
           const data = await res.json();
           setProduct(data);
+          // ডিফল্টভাবে প্রথম ভেরিয়েন্টটি সিলেক্ট থাকবে
+          if (data.variants && data.variants.length > 0) {
+            setSelectedVariant(data.variants[0]);
+          }
         }
       } catch (error) {
         console.error('Error:', error);
@@ -36,7 +50,7 @@ export default function ProductDetails() {
 
   if (loading) {
     return (
-      <div className="bg-[#faf9f6] min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
         <Loader2 className="animate-spin text-[#2f5d50]" size={40} />
       </div>
     );
@@ -44,126 +58,187 @@ export default function ProductDetails() {
 
   if (!product) {
     return (
-      <div className="bg-[#faf9f6] min-h-screen flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold mb-4 text-[#1f2937]">পণ্যটি পাওয়া যায়নি</h2>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#f8fafc]">
+        <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-800 mb-4">
+          পণ্যটি পাওয়া যায়নি
+        </h2>
         <Link
           href="/shop"
-          aria-label="শপে ফিরে যান"
-          className="text-[#2f5d50] font-bold flex items-center gap-2"
+          className="bg-[#2f5d50] text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2"
         >
-          <ArrowLeft className="w-4 h-4" /> শপে ফিরে যান
+          <ArrowLeft size={16} /> শপে ফিরে যান
         </Link>
       </div>
     );
   }
 
   const handleBuyNow = () => {
-    addToCart(product, quantity);
+    if (!selectedVariant) return;
+    addToCart({ ...product, selectedVariant, price: selectedVariant.offerPrice }, quantity);
     router.push('/checkout');
   };
 
+  const handleAddToCart = () => {
+    if (!selectedVariant) return;
+    addToCart({ ...product, selectedVariant, price: selectedVariant.offerPrice }, quantity);
+  };
+
   return (
-    <div className="bg-[#faf9f6] min-h-screen pt-5 pb-10">
-      <div className="container max-w-6xl">
+    <div className="bg-[#f8fafc] min-h-screen pb-20">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-6">
+        {/* Breadcrumb */}
         <Link
           href="/shop"
-          aria-label="শপে ফিরে যান"
-          className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-[#2f5d50] mb-5 transition-colors font-medium"
+          className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-[#2f5d50] mb-8 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>শপে ফিরে যান</span>
+          <ArrowLeft size={14} /> Back to Shop
         </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 bg-transparent">
-          {/* Left: Product Image */}
-          <div className="bg-white rounded overflow-hidden aspect-square">
-            <img
-              src={product.image}
-              alt={`${product.name} এর ছবি`}
-              className="w-full h-full object-cover"
-            />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          {/* Left: Sticky Image Section */}
+          <div className="lg:col-span-6 sticky top-24">
+            <div className="relative aspect-square bg-white rounded-4xl overflow-hidden border border-slate-200 shadow-sm group">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute top-6 left-6">
+                <span className="bg-[#2f5d50] text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                  {product.category}
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Right: Product Content */}
-          <div className="flex flex-col">
-            <h1 className="text-3xl md:text-4xl font-bold text-[#1f2937] mb-1">{product.name}</h1>
-            <p className="text-foreground/40 text-sm mb-4 font-medium uppercase tracking-wider">
-              {product.category}
-            </p>
+          {/* Right: Product Info */}
+          <div className="lg:col-span-6 space-y-8">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-black text-slate-900 leading-none mb-4 uppercase italic tracking-tighter">
+                {product.name}
+              </h1>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-1.5 text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-100">
+                  <CheckCircle2 size={14} />
+                  <span className="text-[10px] font-black uppercase tracking-wider">
+                    In Stock & Ready to Ship
+                  </span>
+                </div>
+              </div>
 
-            <div className="text-3xl font-bold text-secondary mb-6">৳{product.price}</div>
+              {/* Price Display */}
+              <div className="flex items-baseline gap-4 mb-8">
+                <span className="text-5xl font-black text-[#2f5d50] italic tracking-tighter">
+                  ৳{selectedVariant?.offerPrice.toLocaleString('bn-BD')}
+                </span>
+                {selectedVariant?.originalPrice > selectedVariant?.offerPrice && (
+                  <span className="text-xl font-bold text-slate-300 line-through">
+                    ৳{selectedVariant?.originalPrice.toLocaleString('bn-BD')}
+                  </span>
+                )}
+              </div>
 
-            <div
-              className="inline-flex items-center gap-2 text-xs font-bold text-[#2f5d50] bg-[#2f5d50]/10 px-3 py-1.5 w-fit mb-8 border border-[#2f5d50]/20"
-              aria-label="পণ্যটি স্টকে আছে"
-            >
-              <span
-                className="w-1.5 h-1.5 bg-[#2f5d50] rounded-full animate-pulse"
-                aria-hidden="true"
-              />
-              স্টকে আছে
+              <p className="text-slate-500 leading-relaxed font-medium text-lg border-l-4 border-slate-200 pl-6 italic">
+                {product.description}
+              </p>
             </div>
 
-            <div className="flex items-center gap-4 mb-8">
-              <span className="text-sm font-bold text-foreground/60">পরিমাণ:</span>
-              <div className="flex items-center border border-gray-200 bg-white overflow-hidden rounded">
+            {/* Variant Selection */}
+            <div className="space-y-4">
+              <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-1">
+                প্যাক সাইজ / ওজন সিলেক্ট করুন
+              </label>
+              <div className="flex flex-wrap gap-3">
+                {product.variants?.map((variant, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedVariant(variant)}
+                    className={`px-6 py-4 rounded-2xl border-2 transition-all flex flex-col items-start min-w-30 ${
+                      selectedVariant?.weight === variant.weight
+                        ? 'border-[#2f5d50] bg-[#2f5d50]/5 shadow-md shadow-[#2f5d50]/10'
+                        : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
+                    }`}
+                  >
+                    <span
+                      className={`text-sm font-black uppercase ${selectedVariant?.weight === variant.weight ? 'text-[#2f5d50]' : 'text-slate-600'}`}
+                    >
+                      {variant.weight}
+                    </span>
+                    <span className="text-[10px] font-bold">৳{variant.offerPrice}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quantity and Actions */}
+            <div className="space-y-6 pt-4">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center bg-white border-2 border-slate-100 rounded-2xl p-1 shadow-sm">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="p-4 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                  >
+                    <Minus size={18} strokeWidth={3} />
+                  </button>
+                  <span className="w-12 text-center font-black text-xl text-slate-800">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="p-4 hover:bg-slate-50 rounded-xl transition-colors text-[#2f5d50]"
+                  >
+                    <Plus size={18} strokeWidth={3} />
+                  </button>
+                </div>
+                <div className="text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                  Total:{' '}
+                  <span className="text-slate-800 text-sm italic">
+                    ৳{(selectedVariant?.offerPrice * quantity).toLocaleString('bn-BD')}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
                 <button
-                  aria-label="পরিমাণ কমান"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="p-3 hover:bg-gray-50 transition-colors border-r border-gray-200"
+                  onClick={handleAddToCart}
+                  className="flex-[1.5] bg-[#2f5d50] text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-xl shadow-[#2f5d50]/20 hover:scale-[1.02] active:scale-95 transition-all"
                 >
-                  <Minus className="w-4 h-4" />
+                  <ShoppingCart size={18} /> Add to Cart
                 </button>
-                <span
-                  className="w-14 text-center font-bold text-lg"
-                  aria-label={`বর্তমান পরিমাণ ${quantity}`}
-                >
-                  {quantity}
-                </span>
                 <button
-                  aria-label="পরিমাণ বাড়ান"
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="p-3 hover:bg-gray-50 transition-colors border-l border-gray-200"
+                  onClick={handleBuyNow}
+                  className="flex-1 bg-white text-slate-800 border-2 border-slate-200 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-slate-50 active:scale-95 transition-all"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Zap size={18} className="fill-slate-800" /> Order Now
                 </button>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <button
-                aria-label="কার্টে পণ্য যোগ করুন"
-                onClick={() => addToCart(product, quantity)}
-                className="flex-1 bg-[#2f5d50] rounded hover:bg-[#254a40] text-white py-4 font-bold flex items-center justify-center gap-3 transition-all active:scale-[0.98] text-lg"
-              >
-                <ShoppingCart className="w-5 h-5" />
-                <span>কার্টে যোগ করুন</span>
-              </button>
-
-              <button
-                aria-label="সরাসরি কিনুন"
-                onClick={handleBuyNow}
-                className="flex-1 bg-secondary rounded hover:bg-secondary/90 text-white py-4 font-bold flex items-center justify-center gap-3 transition-all active:scale-[0.98] text-lg"
-              >
-                <Zap className="w-5 h-5 fill-current" />
-                <span>সরাসরি কিনুন</span>
-              </button>
-            </div>
-
-            <p className="text-foreground/70 leading-relaxed mb-10 text-lg">
-              {product.description}
-            </p>
-
-            <div
-              className="bg-[#efedeb] p-6 border-l-4 border-[#2f5d50] shadow-sm"
-              aria-label="ডেলিভারি তথ্য বক্স"
-            >
-              <div className="flex gap-4 items-start">
-                <Truck className="w-6 h-6 text-[#2f5d50] shrink-0 mt-1" aria-hidden="true" />
+            {/* Delivery & Trust Info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-8">
+              <div className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                <div className="p-3 bg-slate-50 rounded-xl text-[#2f5d50]">
+                  <Truck size={20} />
+                </div>
                 <div>
-                  <h4 className="font-bold text-[#2f5d50] mb-1 font-bangla">ডেলিভারি তথ্য</h4>
-                  <p className="text-sm text-foreground/70">
-                    সারা বাংলাদেশে ক্যাশ অন ডেলিভারি। খুলনা ও ঢাকায় দ্রুত ডেলিভারি।
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-800 leading-tight">
+                    Fast Delivery
+                  </p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase">
+                    24-72 Hours Nationwide
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                <div className="p-3 bg-slate-50 rounded-xl text-[#2f5d50]">
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-800 leading-tight">
+                    100% Pure
+                  </p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase">
+                    Guaranteed Quality
                   </p>
                 </div>
               </div>

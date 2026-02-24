@@ -3,48 +3,68 @@ import Order from '@/models/Order';
 import Product from '@/models/Product';
 import { NextResponse } from 'next/server';
 
-// ১. অর্ডার প্লেস করা (Customer Checkout)
 export async function POST(request) {
   await connectDB();
   try {
     const body = await request.json();
-    const { items, customerInfo } = body;
+
+    const { items, name, phone, address, district } = body;
 
     let calculatedSubtotal = 0;
     const finalItems = [];
 
     for (const item of items) {
-      const dbProduct = await Product.findById(item.id);
-      if (!dbProduct) return NextResponse.json({ message: 'পণ্য পাওয়া যায়নি' }, { status: 404 });
+      const dbProduct = await Product.findById(item.productId);
 
-      calculatedSubtotal += dbProduct.price * item.quantity;
+      if (!dbProduct) {
+        return NextResponse.json({ message: `পণ্য (${item.name}) পাওয়া যায়নি` }, { status: 404 });
+      }
+
+      const variantName = item.name.match(/\(([^)]+)\)/)?.[1];
+      const selectedVariant = dbProduct.variants.find((v) => v.weight === variantName);
+
+      const itemPrice = selectedVariant
+        ? selectedVariant.offerPrice
+        : dbProduct.variants[0].offerPrice;
+
+      calculatedSubtotal += itemPrice * item.quantity;
+
       finalItems.push({
         productId: dbProduct._id,
-        name: dbProduct.name,
+        name: `${dbProduct.name} (${variantName || 'Default'})`,
         quantity: item.quantity,
-        priceAtOrder: dbProduct.price,
+        priceAtOrder: itemPrice,
       });
     }
 
-    const deliveryCharge = customerInfo.district === 'ঢাকা' ? 60 : 120;
+    const deliveryCharge = district === 'ঢাকা' ? 60 : 120;
+    const totalAmount = calculatedSubtotal + deliveryCharge;
+
     const newOrder = await Order.create({
-      name: customerInfo.name,
-      phone: customerInfo.phone,
-      address: customerInfo.address,
-      district: customerInfo.district,
+      name,
+      phone,
+      address,
+      district,
       items: finalItems,
       subtotal: calculatedSubtotal,
       deliveryCharge,
-      totalAmount: calculatedSubtotal + deliveryCharge,
+      totalAmount,
     });
 
-    return NextResponse.json({ success: true, orderId: newOrder._id }, { status: 201 });
+    return NextResponse.json(
+      {
+        success: true,
+        orderId: newOrder._id,
+        total: totalAmount,
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    return NextResponse.json({ message: 'সার্ভার এরর' }, { status: 500 });
+    console.error('Order API Error:', error);
+    return NextResponse.json({ message: 'সার্ভার এরর, আবার চেষ্টা করুন' }, { status: 500 });
   }
 }
 
-// ২. সব অর্ডার দেখা (Admin View)
 export async function GET() {
   await connectDB();
   try {

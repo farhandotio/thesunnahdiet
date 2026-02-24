@@ -2,28 +2,10 @@
 
 import React, { useState } from 'react';
 import { useCart } from '@/context/CartContext';
-import { Truck, CreditCard, ShoppingBag, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Truck, CreditCard, ShoppingBag, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notify } from '@/lib/notification';
-
-const bnToEn = (str) => {
-  const banglaNums = {
-    '০': '0',
-    '১': '1',
-    '২': '2',
-    '৩': '3',
-    '৪': '4',
-    '৫': '5',
-    '৬': '6',
-    '৭': '7',
-    '৮': '8',
-    '৯': '9',
-  };
-  return str.toString().replace(/[০-৯]/g, (d) => banglaNums[d]);
-};
-
-const priceToNumber = (price) => parseInt(bnToEn(price)) || 0;
 
 export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
@@ -31,6 +13,7 @@ export default function CheckoutPage() {
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // ডিস্ট্রিক্ট অনুযায়ী ডেলিভারি চার্জ
   const deliveryCharge = formData.district === 'ঢাকা' ? 60 : 120;
   const grandTotal = cartTotal + deliveryCharge;
 
@@ -41,12 +24,19 @@ export default function CheckoutPage() {
     setLoading(true);
 
     const orderData = {
+      name: formData.name,
+      phone: formData.phone,
+      address: formData.address,
+      district: formData.district,
       items: cartItems.map((item) => ({
-        id: item._id || item.id,
-        name: item.name,
+        productId: item._id || item.id,
+        name: `${item.name} (${item.selectedVariant?.weight || 'Default'})`,
         quantity: item.quantity,
+        priceAtOrder: item.selectedVariant?.offerPrice || item.price,
       })),
-      customerInfo: formData,
+      subtotal: cartTotal,
+      deliveryCharge: deliveryCharge,
+      totalAmount: grandTotal,
     };
 
     try {
@@ -59,9 +49,14 @@ export default function CheckoutPage() {
       const result = await response.json();
 
       if (result.success) {
-        notify.success('অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!');
+        notify.success('অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!');
 
-        const message = `নতুন অর্ডার!%0Aঅর্ডার আইডি: ${result.orderId}%0Aনাম: ${formData.name}%0Aফোন: ${formData.phone}%0Aমোট বিল: ৳${result.total}`;
+        // WhatsApp মেসেজ ফরম্যাট (ভেরিয়েন্ট সহ)
+        const itemDetails = cartItems
+          .map((item) => `- ${item.name} (${item.selectedVariant?.weight}) x ${item.quantity}`)
+          .join('%0A');
+
+        const message = `*নতুন অর্ডার!*%0A%0A*নাম:* ${formData.name}%0A*ফোন:* ${formData.phone}%0A*ঠিকানা:* ${formData.address}%0A%0A*পণ্যসমূহ:*%0A${itemDetails}%0A%0A*মোট বিল:* ৳${grandTotal}`;
 
         setTimeout(() => {
           window.open(`https://wa.me/8801814029666?text=${message}`, '_blank');
@@ -73,7 +68,7 @@ export default function CheckoutPage() {
         notify.error(result.message || 'অর্ডার করতে সমস্যা হয়েছে।');
       }
     } catch (error) {
-      notify.error('সার্ভার কানেকশন এরর! আবার চেষ্টা করুন।');
+      notify.error('সার্ভার কানেকশন এরর!');
     } finally {
       setLoading(false);
     }
@@ -81,18 +76,21 @@ export default function CheckoutPage() {
 
   if (isOrderComplete) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#faf9f6] p-4">
-        <div className="bg-white p-8 rounded border border-gray-100 shadow-sm text-center max-w-md w-full">
-          <CheckCircle2 className="w-16 h-16 text-[#2f5d50] mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-[#1f2937] mb-2">অর্ডারটি গ্রহণ করা হয়েছে!</h2>
-          <p className="text-gray-500 mb-6 leading-relaxed text-sm">
-            ধন্যবাদ **{formData.name}**, আপনার অর্ডারটি সফলভাবে সম্পন্ন হয়েছে। আমাদের প্রতিনিধি
-            শীঘ্রই যোগাযোগ করবেন।
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4 font-sans">
+        <div className="bg-white p-10 rounded-4xl border border-slate-100 shadow-xl shadow-slate-200/50 text-center max-w-md w-full animate-in zoom-in-95 duration-500">
+          <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-10 h-10 text-[#2f5d50]" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-800 mb-2 uppercase italic tracking-tighter">
+            অর্ডার সফল হয়েছে!
+          </h2>
+          <p className="text-slate-500 mb-8 font-medium text-sm leading-relaxed">
+            ধন্যবাদ <span className="text-slate-800 font-bold">{formData.name}</span>, আপনার
+            অর্ডারটি প্রসেসিং এ আছে। দ্রুত আপনার সাথে যোগাযোগ করা হবে।
           </p>
           <Link
-            aria-label="শপে ফিরে যান এবং আরও কেনাকাটা করুন"
             href="/shop"
-            className="block w-full bg-[#2f5d50] text-white py-3 rounded font-bold hover:bg-[#254a40] transition-colors"
+            className="block w-full bg-[#2f5d50] text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-[#2f5d50]/20 hover:scale-105 transition-all"
           >
             আরও কেনাকাটা করুন
           </Link>
@@ -103,13 +101,16 @@ export default function CheckoutPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf9f6]">
-        <ShoppingBag className="w-12 h-12 text-gray-300 mb-3" />
-        <h2 className="text-lg font-bold mb-4">আপনার কার্ট খালি</h2>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc]">
+        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+          <ShoppingBag className="w-8 h-8 text-slate-300" />
+        </div>
+        <h2 className="text-xl font-black uppercase italic tracking-tighter text-slate-800 mb-6">
+          আপনার কার্ট খালি
+        </h2>
         <Link
-          aria-label="শপে যান"
           href="/shop"
-          className="bg-[#2f5d50] text-white px-6 py-2 rounded font-bold"
+          className="bg-[#2f5d50] text-white px-8 py-3.5 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-[#2f5d50]/20"
         >
           শপে ফিরে যান
         </Link>
@@ -118,164 +119,126 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="bg-[#faf9f6] min-h-screen py-8">
-      <div className="container max-w-5xl px-4 mx-auto">
-        <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-400 mb-6 font-bold">
-          <Link aria-label="হোম পেজে যান" href="/">
-            হোম
-          </Link>
-          <ChevronRight className="w-3 h-3" />
-          <Link aria-label="শপ পেজে যান" href="/shop">
-            শপ
-          </Link>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-[#2f5d50]">চেকআউট</span>
+    <div className="bg-[#f8fafc] min-h-screen py-12 font-sans">
+      <div className="max-w-6xl px-4 mx-auto">
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-10 font-black">
+          <Link href="/">HOME</Link>
+          <ChevronRight size={12} />
+          <Link href="/shop">SHOP</Link>
+          <ChevronRight size={12} />
+          <span className="text-[#2f5d50]">CHECKOUT</span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: Form */}
-          <div className="lg:col-span-7">
-            <div className="bg-white p-5 md:p-8 rounded border border-gray-100 shadow-sm relative overflow-hidden">
-              {/* টপ ডেকোরেশন বার */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-[#2f5d50]/20"></div>
-
-              <h2 className="text-xl font-black mb-8 flex items-center gap-3 text-[#1f2937] uppercase tracking-tight">
-                <div className="p-2 bg-[#2f5d50] rounded text-white">
-                  <Truck className="w-5 h-5" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          {/* Left: Checkout Form */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative">
+              <h2 className="text-2xl font-black mb-10 flex items-center gap-4 text-slate-800 uppercase italic tracking-tighter">
+                <div className="p-3 bg-[#2f5d50] rounded-2xl text-white shadow-lg shadow-[#2f5d50]/20">
+                  <Truck size={24} />
                 </div>
-                ডেলিভারি তথ্য
+                ডেলিভারি তথ্য দিন
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* নাম এবং ফোন নম্বর */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="group space-y-2">
-                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-wide ml-1">
-                      আপনার নাম *
-                    </label>
-                    <input
-                      required
-                      name="name"
-                      aria-label="আপনার নাম লিখুন"
-                      onChange={handleInputChange}
-                      className="w-full p-4 rounded bg-[#fcfbf9] border-l-4 border-gray-100 outline-none focus:bg-white focus:border-[#2f5d50] text-base font-bold shadow-sm transition-all"
-                      placeholder="যেমন: আব্দুল্লাহ"
-                    />
-                  </div>
-                  <div className="group space-y-2">
-                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-wide ml-1">
-                      মোবাইল নম্বর *
-                    </label>
-                    <input
-                      required
-                      name="phone"
-                      aria-label="আপনার মোবাইল নম্বর লিখুন"
-                      onChange={handleInputChange}
-                      className="w-full p-4 rounded bg-[#fcfbf9] border-l-4 border-gray-100 outline-none focus:bg-white focus:border-[#2f5d50] text-base font-bold shadow-sm transition-all"
-                      placeholder="017XXXXXXXX"
-                    />
-                  </div>
+                  <InputField
+                    label="আপনার নাম *"
+                    name="name"
+                    placeholder="যেমন: আব্দুল্লাহ"
+                    onChange={handleInputChange}
+                  />
+                  <InputField
+                    label="মোবাইল নম্বর *"
+                    name="phone"
+                    placeholder="017XXXXXXXX"
+                    onChange={handleInputChange}
+                  />
                 </div>
 
-                {/* জেলা এবং ঠিকানা */}
-                <div className="flex flex-col md:flex-row gap-6">
-                  <div className="space-y-2 md:w-1/3">
-                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-wide ml-1">
-                      জেলা *
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                      জেলা নির্বাচন করুন *
                     </label>
                     <div className="relative">
                       <select
                         name="district"
-                        aria-label="আপনার জেলা নির্বাচন করুন"
                         onChange={handleInputChange}
-                        className="w-full p-4 rounded bg-[#fcfbf9] border-l-4 border-gray-100 outline-none focus:bg-white focus:border-[#2f5d50] text-base font-bold shadow-sm appearance-none cursor-pointer transition-all"
+                        className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent outline-none focus:bg-white focus:border-[#2f5d50] text-sm font-bold shadow-sm appearance-none cursor-pointer transition-all uppercase"
                       >
                         <option value="ঢাকা">ঢাকা (Inside Dhaka)</option>
                         <option value="অন্যান্য">ঢাকার বাইরে (Outside)</option>
                       </select>
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
-                        <ChevronRight className="w-4 h-4 rotate-90" />
-                      </div>
+                      <ChevronRight
+                        size={16}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-slate-400"
+                      />
                     </div>
                   </div>
-
-                  <div className="space-y-2 flex-1">
-                    <label className="text-[11px] font-black text-[#2f5d50] uppercase tracking-wide ml-1">
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
                       পুরো ঠিকানা *
                     </label>
-                    <textarea
+                    <input
                       required
                       name="address"
-                      aria-label="আপনার পুরো ঠিকানা লিখুন"
                       onChange={handleInputChange}
-                      rows="1"
-                      className="w-full p-4 rounded bg-[#fcfbf9] border-l-4 border-gray-100 outline-none focus:bg-white focus:border-[#2f5d50] text-base font-bold shadow-sm transition-all min-h-19.5 md:min-h-auto"
                       placeholder="বাসা নম্বর, রোড, এলাকা..."
-                    ></textarea>
+                      className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent outline-none focus:bg-white focus:border-[#2f5d50] text-sm font-bold shadow-sm transition-all"
+                    />
                   </div>
                 </div>
 
-                {/* পেমেন্ট মেথড হাইলাইট */}
-                <div className="pt-4">
-                  <div className="p-4 rounded border-2 border-[#2f5d50]/10 bg-[#2f5d50]/20 flex items-center justify-between group hover:bg-[#2f5d50]/5 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-[#2f5d50]">
-                        <CreditCard className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <span className="block font-black text-sm text-[#2f5d50] uppercase">
-                          ক্যাশ অন ডেলিভারি
-                        </span>
-                        <span className="text-[10px] text-gray-400 font-bold uppercase">
-                          পণ্য হাতে পেয়ে টাকা পরিশোধ করুন
-                        </span>
-                      </div>
+                {/* COD Badge */}
+                <div className="bg-slate-50 p-6 rounded-3xl border-2 border-dashed border-slate-200 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-[#2f5d50]">
+                      <CreditCard size={24} />
                     </div>
-                    <div className="w-6 h-6 bg-[#2f5d50] rounded-full border-4 border-white shadow-md" />
+                    <div>
+                      <span className="block font-black text-sm text-slate-800 uppercase italic leading-none mb-1">
+                        Cash on Delivery
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                        পণ্য হাতে পেয়ে পেমেন্ট করুন
+                      </span>
+                    </div>
                   </div>
+                  <div className="w-6 h-6 bg-[#2f5d50] rounded-full border-4 border-white shadow-lg" />
                 </div>
 
-                {/* সাবমিট বাটন */}
                 <button
-                  aria-label="অর্ডার সম্পন্ন করার বাটন"
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#2f5d50] hover:bg-[#1e3d34] text-white py-5 rounded font-black text-lg uppercase tracking-wide shadow-xl shadow-[#2f5d50]/20 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+                  className="w-full bg-[#2f5d50] text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-[#2f5d50]/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                 >
                   {loading ? (
-                    <span className="animate-pulse">প্রসেসিং...</span>
+                    <Loader2 className="animate-spin" size={20} />
                   ) : (
-                    <>
-                      অর্ডার নিশ্চিত করুন
-                      <span className="bg-white/20 px-3 py-1 rounded text-sm italic">
-                        ৳{grandTotal.toLocaleString('bn-BD')}
-                      </span>
-                    </>
+                    `অর্ডার কনফার্ম করুন (৳${grandTotal.toLocaleString('bn-BD')})`
                   )}
                 </button>
               </form>
             </div>
           </div>
 
-          {/* Right Column: Summary */}
+          {/* Right: Order Summary */}
           <div className="lg:col-span-5">
-            <div className="bg-white rounded-xl border border-gray-100 shadow-xl shadow-gray-200/50 sticky top-24 overflow-hidden">
-              {/* হেডার */}
-              <div className="p-5 border-b border-gray-50 bg-[#2f5d50]/20 flex items-center justify-between">
-                <h2 className="font-black text-sm text-[#1f2937] uppercase tracking-wide flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4 text-[#2f5d50]" />
-                  অর্ডার সামারি
-                </h2>
-                <span className="bg-gray-100 text-gray-500 text-[10px] px-2 py-1 rounded font-bold">
-                  {cartItems.length} টি পণ্য
+            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm sticky top-24 overflow-hidden">
+              <div className="p-6 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="font-black text-xs text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                  <ShoppingBag size={16} className="text-[#2f5d50]" /> ORDER SUMMARY
+                </h3>
+                <span className="text-[10px] font-black bg-white px-3 py-1 rounded-full border border-slate-200 text-slate-500">
+                  {cartItems.length} ITEMS
                 </span>
               </div>
 
-              {/* প্রোডাক্ট লিস্ট */}
-              <div className="p-5 space-y-5 max-h-100 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200">
-                {cartItems.map((item, index) => (
+              <div className="p-6 space-y-6 max-h-100 overflow-y-auto scrollbar-hide">
+                {cartItems.map((item) => (
                   <div key={item._id || item.id} className="flex gap-4 items-center group">
-                    <div className="relative w-16 h-16 rounded-lg border border-gray-100 shrink-0 overflow-hidden bg-gray-50">
+                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shrink-0">
                       <Image
                         src={item.image}
                         alt={item.name}
@@ -283,67 +246,82 @@ export default function CheckoutPage() {
                         className="object-cover group-hover:scale-110 transition-transform duration-500"
                         unoptimized
                       />
-                      <div className="absolute -top-1 -right-1 bg-[#2f5d50] text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-black shadow-lg border-2 border-white">
-                        {item.quantity}
-                      </div>
                     </div>
-
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-[14px] font-black text-slate-800 leading-tight mb-1 truncate uppercase italic">
+                      <h4 className="text-[13px] font-black text-slate-800 uppercase italic leading-none mb-1 truncate">
                         {item.name}
                       </h4>
-                      <p className="text-[11px] text-slate-400 font-bold tracking-tighter uppercase">
-                        ৳ {item.price} <span className="mx-1">×</span> {item.quantity}
+                      <p className="text-[10px] font-black text-[#2f5d50] uppercase tracking-widest">
+                        SIZE: {item.selectedVariant?.weight || 'Default'}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">
+                        ৳{item.selectedVariant?.offerPrice || item.price} × {item.quantity}
                       </p>
                     </div>
-
                     <div className="text-right">
-                      <span className="font-black text-sm text-slate-700 italic">
-                        ৳ {(priceToNumber(item.price) * item.quantity).toLocaleString('bn-BD')}
+                      <span className="font-black text-sm text-slate-800 italic">
+                        ৳
+                        {(
+                          (item.selectedVariant?.offerPrice || item.price) * item.quantity
+                        ).toLocaleString('bn-BD')}
                       </span>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* বিলিং ক্যালকুলেশন */}
-              <div className="p-6 bg-[#fcfbf9] border-t border-gray-100">
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between text-[11px] font-black text-gray-400 uppercase tracking-wide">
-                    <span>সাবটোটাল</span>
-                    <span className="text-gray-700">৳ {cartTotal.toLocaleString('bn-BD')}</span>
-                  </div>
-                  <div className="flex justify-between text-[11px] font-black text-gray-400 uppercase tracking-wide">
-                    <span>ডেলিভারি চার্জ</span>
-                    <span className="text-gray-700">
-                      ৳ {deliveryCharge.toLocaleString('bn-BD')}
-                    </span>
-                  </div>
+              <div className="p-8 bg-slate-50/30 border-t border-slate-100 space-y-4">
+                <div className="flex justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                  <span>Subtotal</span>
+                  <span className="text-slate-800 font-bold">
+                    ৳{cartTotal.toLocaleString('bn-BD')}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                  <span>Delivery Charge ({formData.district})</span>
+                  <span className="text-slate-800 font-bold">
+                    ৳{deliveryCharge.toLocaleString('bn-BD')}
+                  </span>
                 </div>
 
-                {/* গ্র্যান্ড টোটাল কার্ড */}
-                <div className="bg-[#2f5d50] p-4 rounded-lg shadow-lg shadow-[#2f5d50]/20 flex justify-between items-center transform transition-transform hover:scale-[1.02]">
-                  <div className="text-white/80">
-                    <p className="text-[10px] font-black uppercase tracking-wide leading-none mb-1">
-                      সর্বমোট প্রদেয়
+                <div className="pt-4 border-t border-slate-200 flex justify-between items-end">
+                  <div>
+                    <p className="text-[10px] font-black text-[#2f5d50] uppercase tracking-[0.2em] leading-none mb-1">
+                      Total Payable
                     </p>
-                    <p className="text-xs font-bold italic">Cash on Delivery</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                      VAT Included
+                    </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-black text-white italic tracking-tighter">
-                      ৳ {grandTotal.toLocaleString('bn-BD')}
+                    <span className="text-3xl font-black text-slate-900 italic tracking-tighter">
+                      ৳{grandTotal.toLocaleString('bn-BD')}
                     </span>
                   </div>
                 </div>
-
-                <p className="mt-4 text-[10px] text-center text-gray-400 font-bold uppercase tracking-tight">
-                  * নিরাপদ ও দ্রুত ডেলিভারি নিশ্চিত করছি
-                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Reusable Input Component
+function InputField({ label, name, placeholder, onChange }) {
+  return (
+    <div className="space-y-2">
+      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+        {label}
+      </label>
+      <input
+        required
+        name={name}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent outline-none focus:bg-white focus:border-[#2f5d50] text-sm font-bold shadow-sm transition-all"
+      />
     </div>
   );
 }
