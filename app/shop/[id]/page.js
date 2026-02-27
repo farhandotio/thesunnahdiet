@@ -114,7 +114,7 @@ export default function ProductDetails() {
           {/* Right: Product Info */}
           <div className="lg:col-span-6 space-y-8">
             <div>
-              <h1 className="text-4xl md:text-5xl font-black text-slate-900 leading-none mb-4 uppercase italic tracking-tighter">
+              <h1 className="text-3xl md:text-4xl font-semibold italic text-[#4d4e4e] leading-none mb-4 uppercase tracking-tighter">
                 {product.name}
               </h1>
               <div className="flex items-center gap-3 mb-6">

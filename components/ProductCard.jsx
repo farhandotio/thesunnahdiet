@@ -37,7 +37,7 @@ export default function ProductCard({ product }) {
 
       <div className="p-5 flex flex-col flex-1">
         <Link aria-label={`${product.name} - বিস্তারিত`} href={`/shop/${productId}`}>
-          <h3 className="text-xl font-black text-[#1f2937] mb-1 group-hover:text-[#2f5d50] transition-colors leading-tight uppercase italic tracking-tighter">
+          <h3 className="text-base line-clamp-2 text-[#4d4e4e] mb-1 group-hover:text-[#2f5d50] transition-colors uppercase tracking-tighter">
             {product.name}
           </h3>
         </Link>
